@@ -1,0 +1,37 @@
+{
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvQbsfctcxux0o80WnnztiLKr4Jha8PcBR+rKmGAqGDMB9o18/x4Z8QGT8bEUxlpTUJ2aXRE/DKYUTi+rdOcHdMU8E4W0K2lFghO+urWJVDrNatpRZxCBAxjOu5MpZcQyRwtNqEZZRvmr/Pk/d0MJTbxyE6+1nYGOTpxh1eb8tvnLKQp7fPpcCZ9Cow+7kF1OrUDLYZVZkgm0o+ESk6Xajf40900Ynk5XQCTf/o6f3LMo3XXkpPY1T4LFR3VyhTleOq9UZkZIa4tgGxju74mfxQaCKe1Yks5KQT4uubYniYQ5C5wBGI+oB6NI5BatNQhoYqJBKqr2fS20l/ASbeTUmwIDAQAB",
+  "manifest_version": 3,
+  "name": "TabSpace",
+  "version": "0.1.0",
+  "description": "Marcadores propios sincronizados con tu Google Drive (carpeta privada de la app).",
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_page": "options.html",
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": ["identity", "storage", "contextMenus", "activeTab"],
+  "host_permissions": ["https://www.googleapis.com/*"],
+  "oauth2": {
+    "client_id": "__GOOGLE_OAUTH_CLIENT_ID__",
+    "scopes": ["https://www.googleapis.com/auth/drive.appdata"]
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}
