@@ -2,7 +2,7 @@
   "name": "tabspace",
   "version": "0.1.0",
   "private": true,
-  "description": "Extension de Chrome de marcadores propios, sincronizados con Google Drive (appDataFolder).",
+  "description": "Chrome extension for your own bookmarks, synced with Google Drive (appDataFolder).",
   "scripts": {
     "dev": "next dev -p 3000",
     "typecheck": "tsc --noEmit",

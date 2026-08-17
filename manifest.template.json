@@ -3,7 +3,7 @@
   "manifest_version": 3,
   "name": "TabSpace",
   "version": "0.1.0",
-  "description": "Marcadores propios sincronizados con tu Google Drive (carpeta privada de la app).",
+  "description": "Your own bookmarks, synced with your Google Drive (private app folder).",
   "action": {
     "default_popup": "popup.html",
     "default_icon": {

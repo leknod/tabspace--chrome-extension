@@ -1,8 +1,8 @@
 import { useCallback, useRef, useState } from 'react';
 
 /**
- * Deja que un item se anime (fade/slide out) antes de llamar al onDelete real,
- * en vez de que desaparezca de golpe en cuanto se quita del array de estado.
+ * Lets an item animate out (fade/slide) before calling the real onDelete,
+ * instead of it vanishing instantly as soon as it's removed from the state array.
  */
 export function useRemovingTransition(onDelete: (id: string) => void, durationMs = 150) {
   const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());

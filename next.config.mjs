@@ -2,10 +2,10 @@
 const nextConfig = {
   output: 'export',
   distDir: 'out',
-  // La extension no tiene servidor de imagenes: sin optimizacion de next/image.
+  // The extension has no image server: no next/image optimization.
   images: { unoptimized: true },
-  // chrome-extension://<id>/ es el origen raiz, asi que las rutas absolutas
-  // que genera Next (/_next/...) resuelven bien sin tocar assetPrefix.
+  // chrome-extension://<id>/ is the root origin, so the absolute paths
+  // Next generates (/_next/...) resolve fine without touching assetPrefix.
   trailingSlash: false,
   reactStrictMode: true,
 };

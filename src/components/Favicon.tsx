@@ -6,7 +6,7 @@ interface Props {
   className?: string;
 }
 
-/** Favicon de Google con fallback a un icono generico si la imagen falla (dominio raro, offline, etc). */
+/** Google favicon with a fallback to a generic icon if the image fails (odd domain, offline, etc). */
 export function Favicon({ url, favicon, className }: Props) {
   const [broken, setBroken] = useState(false);
 
@@ -15,7 +15,7 @@ export function Favicon({ url, favicon, className }: Props) {
     try {
       hostname = new URL(url).hostname;
     } catch {
-      // sin hostname valido, deja que falle el <img> y caiga al fallback
+      // no valid hostname, let the <img> fail and fall back
     }
 
     return (

@@ -14,17 +14,17 @@ function step(label, fn) {
   fn();
 }
 
-step('limpiando dist/ y out/', () => {
+step('cleaning dist/ and out/', () => {
   rmSync(dist, { recursive: true, force: true });
   rmSync(out, { recursive: true, force: true });
   mkdirSync(dist, { recursive: true });
 });
 
-step('compilando popup.html / options.html con Next', () => {
+step('building popup.html / options.html with Next', () => {
   execSync('npx next build', { cwd: root, stdio: 'inherit' });
 });
 
-step('empaquetando el service worker de background', () => {
+step('bundling the background service worker', () => {
   esbuild.buildSync({
     entryPoints: [path.join(root, 'src/background/index.ts')],
     outfile: path.join(dist, 'background.js'),
@@ -35,11 +35,11 @@ step('empaquetando el service worker de background', () => {
   });
 });
 
-step('copiando assets de Next a dist/', () => {
+step('copying Next assets to dist/', () => {
   cpSync(out, dist, { recursive: true });
 });
 
-step('arreglando nombres reservados (Chrome prohibe "_" al inicio de archivo/carpeta)', () => {
+step('fixing reserved names (Chrome forbids "_" at the start of a file/folder)', () => {
   const TEXT_EXTENSIONS = new Set(['.html', '.js', '.css', '.json', '.map']);
 
   function walkFiles(dir, files = []) {
@@ -60,11 +60,11 @@ step('arreglando nombres reservados (Chrome prohibe "_" al inicio de archivo/car
     }
   }
 
-  // 1) Ficheros sueltos con "_" inicial (ej. _app-<hash>.js, _buildManifest.js):
-  // se les quita el guion bajo y se reescriben las referencias a su nombre exacto.
-  // OJO: no tocar identificadores tipo "__next"/"__NEXT_DATA__" (doble guion bajo,
-  // sin barra), por eso el reemplazo se hace por nombre de archivo completo, no
-  // por el token "_next" suelto.
+  // 1) Loose files with a leading "_" (e.g. _app-<hash>.js, _buildManifest.js):
+  // strip the underscore and rewrite references to their exact name.
+  // NOTE: don't touch identifiers like "__next"/"__NEXT_DATA__" (double underscore,
+  // no slash), so the replacement is done by full file name, not by the loose
+  // "_next" token.
   const renamedBasenames = [];
   for (const file of walkFiles(dist)) {
     const base = path.basename(file);
@@ -82,20 +82,20 @@ step('arreglando nombres reservados (Chrome prohibe "_" al inicio de archivo/car
     });
   }
 
-  // 2) La carpeta _next -> next-assets, reescribiendo solo la ruta "/_next/".
+  // 2) The _next folder -> next-assets, rewriting only the "/_next/" path.
   renameSync(path.join(dist, '_next'), path.join(dist, 'next-assets'));
   replaceInTextFiles((content) => content.split('/_next/').join('/next-assets/'));
 });
 
-step('copiando iconos', () => {
+step('copying icons', () => {
   cpSync(path.join(root, 'public/icons'), path.join(dist, 'icons'), { recursive: true });
 });
 
-step('generando manifest.json', () => {
+step('generating manifest.json', () => {
   const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
   if (!clientId) {
     process.stdout.write(
-      '   (!) GOOGLE_OAUTH_CLIENT_ID no esta definido en .env -- el login con Google no funcionara hasta que lo configures.\n',
+      '   (!) GOOGLE_OAUTH_CLIENT_ID is not set in .env -- Google login will not work until you configure it.\n',
     );
   }
 
@@ -104,6 +104,6 @@ step('generando manifest.json', () => {
   writeFileSync(path.join(dist, 'manifest.json'), manifest);
 });
 
-step('listo', () => {
-  process.stdout.write(`dist/ generado en ${dist}\nCarga esa carpeta en chrome://extensions (modo desarrollador -> "Cargar descomprimida").\n`);
+step('done', () => {
+  process.stdout.write(`dist/ generated at ${dist}\nLoad that folder in chrome://extensions (Developer mode -> "Load unpacked").\n`);
 });

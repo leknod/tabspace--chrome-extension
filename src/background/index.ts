@@ -1,4 +1,4 @@
-import { getLocalBookmarks, newId, setLocalBookmarks } from '../lib/storage';
+import { getLastUsedSpaceId, getLocalBookmarks, newId, setLocalBookmarks } from '../lib/storage';
 import { syncBookmarks } from '../lib/sync';
 import type { Bookmark } from '../lib/types';
 
@@ -7,7 +7,7 @@ const CONTEXT_MENU_ID = 'tabspace-add-current-tab';
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: CONTEXT_MENU_ID,
-    title: 'Guardar en TabSpace',
+    title: 'Save to TabSpace',
     contexts: ['page', 'link'],
   });
 });
@@ -18,14 +18,14 @@ async function addBookmark(url: string, title: string): Promise<void> {
     id: newId(),
     url,
     title: title || url,
-    tags: [],
+    spaceId: await getLastUsedSpaceId(),
     createdAt: now,
     updatedAt: now,
   };
 
   const current = await getLocalBookmarks();
   await setLocalBookmarks([...current, bookmark]);
-  await syncBookmarks().catch((err) => console.error('[tabspace] sync fallo', err));
+  await syncBookmarks().catch((err) => console.error('[tabspace] sync failed', err));
 }
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
@@ -35,13 +35,13 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   void addBookmark(url, tab?.title ?? url);
 });
 
-// Permite que popup/options pidan una sincronizacion sin duplicar la logica.
+// Lets the popup/options request a sync without duplicating the logic.
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === 'SYNC_NOW') {
     syncBookmarks()
       .then((result) => sendResponse({ ok: true, result }))
       .catch((err) => sendResponse({ ok: false, error: String(err) }));
-    return true; // respuesta asincrona
+    return true; // async response
   }
   return false;
 });

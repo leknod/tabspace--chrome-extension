@@ -1,12 +1,12 @@
 /**
- * Genera un par de claves RSA para fijar el ID de la extension.
+ * Generates an RSA key pair to pin the extension's ID.
  *
- * Sin esto, cada "Cargar descomprimida" en chrome://extensions puede darte
- * un ID distinto, y el OAuth client de Google Cloud (tipo "Extension de Chrome")
- * esta atado a un ID fijo -> el login se rompe. Con la clave publica puesta en
- * manifest.json ("key"), el ID queda fijo aunque recargues la extension.
+ * Without this, every "Load unpacked" in chrome://extensions can give you
+ * a different ID, and the Google Cloud OAuth client (type "Chrome Extension")
+ * is tied to a fixed ID -> login breaks. With the public key set in
+ * manifest.json ("key"), the ID stays fixed even when you reload the extension.
  *
- * Uso: node scripts/generate-extension-key.mjs
+ * Usage: node scripts/generate-extension-key.mjs
  */
 import { generateKeyPairSync, createHash } from 'node:crypto';
 import { writeFileSync, mkdirSync } from 'node:fs';
@@ -23,8 +23,8 @@ const { publicKey, privateKey } = generateKeyPairSync('rsa', {
   privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
 });
 
-// El ID de extension de Chrome = primeros 16 bytes del SHA256 de la
-// clave publica DER, con cada nibble hex mapeado a una letra a-p.
+// Chrome's extension ID = first 16 bytes of the SHA256 of the DER public
+// key, with each hex nibble mapped to a letter a-p.
 const hash = createHash('sha256').update(publicKey).digest();
 const extensionId = [...hash.subarray(0, 16)]
   .flatMap((byte) => [byte >> 4, byte & 0x0f])
@@ -37,9 +37,9 @@ writeFileSync(path.join(secretsDir, 'private-key.pem'), privateKey);
 writeFileSync(path.join(secretsDir, 'public-key.base64.txt'), publicKeyBase64);
 writeFileSync(path.join(secretsDir, 'extension-id.txt'), extensionId);
 
-console.log('Clave privada guardada en extension-key/private-key.pem (no la subas a git).');
-console.log('\nID de extension fijo:');
+console.log('Private key saved to extension-key/private-key.pem (do not commit it).');
+console.log('\nFixed extension ID:');
 console.log('  ' + extensionId);
-console.log('\nAgrega este bloque a manifest.template.json (nivel raiz, junto a "manifest_version"):');
+console.log('\nAdd this block to manifest.template.json (top level, next to "manifest_version"):');
 console.log(`  "key": "${publicKeyBase64}",`);
-console.log('\nUsa el ID de extension como "Item ID" al crear el OAuth client (tipo "Extension de Chrome") en Google Cloud Console.');
+console.log('\nUse the extension ID as the "Item ID" when creating the OAuth client (type "Chrome Extension") in Google Cloud Console.');
