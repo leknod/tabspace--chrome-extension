@@ -7,6 +7,8 @@ export interface Space {
   name: string;
   createdAt: number;
   updatedAt: number;
+  /** Manual drag-and-drop position in the sidebar. Falls back to createdAt when unset. */
+  order?: number;
   /** true when the user deleted it; kept around to reconcile deletion across devices. */
   deleted?: boolean;
 }
@@ -20,6 +22,10 @@ export interface Bookmark {
   favicon?: string;
   createdAt: number;
   updatedAt: number;
+  /** Manual drag-and-drop position within its space. Falls back to createdAt when unset. */
+  order?: number;
+  /** true for a section header: a link-less row used to group bookmarks under it within a space. */
+  isHeader?: boolean;
   /** true when the user deleted it; kept around to reconcile deletion across devices. */
   deleted?: boolean;
 }

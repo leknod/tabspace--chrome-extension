@@ -19,6 +19,7 @@ async function addBookmark(url: string, title: string): Promise<void> {
     url,
     title: title || url,
     spaceId: await getLastUsedSpaceId(),
+    order: now,
     createdAt: now,
     updatedAt: now,
   };
