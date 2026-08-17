@@ -5,6 +5,7 @@ const BOOKMARKS_KEY = 'bookmarks';
 const SPACES_KEY = 'spaces';
 const SYNC_STATE_KEY = 'syncState';
 const LAST_USED_SPACE_KEY = 'lastUsedSpaceId';
+const OPEN_IN_NEW_TAB_KEY = 'openInNewTab';
 
 /**
  * chrome.storage.local only exists inside the extension. Outside it (e.g. `npm run dev`
@@ -61,6 +62,15 @@ export async function getLastUsedSpaceId(): Promise<string> {
 
 export async function setLastUsedSpaceId(id: string): Promise<void> {
   await setKey(LAST_USED_SPACE_KEY, id);
+}
+
+/** Whether clicking a bookmark opens it in a new tab instead of navigating the current one. */
+export async function getOpenInNewTab(): Promise<boolean> {
+  return (await getKey<boolean>(OPEN_IN_NEW_TAB_KEY)) ?? false;
+}
+
+export async function setOpenInNewTab(value: boolean): Promise<void> {
+  await setKey(OPEN_IN_NEW_TAB_KEY, value);
 }
 
 export function newId(): string {

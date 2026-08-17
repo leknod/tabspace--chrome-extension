@@ -1,14 +1,45 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { signOut } from '@/lib/auth';
-import { setLocalBookmarks, setLocalSpaces } from '@/lib/storage';
+import { getOpenInNewTab, setLocalBookmarks, setLocalSpaces, setOpenInNewTab } from '@/lib/storage';
 import { DEFAULT_SPACE_ID } from '@/lib/types';
 import type { Bookmark, BookmarksFile, Space } from '@/lib/types';
 import { useBookmarks } from '@/lib/useBookmarks';
 
+function Switch({ enabled, onToggle, label }: { enabled: boolean; onToggle: () => void; label: string }) {
+  return (
+    <button
+      onClick={onToggle}
+      role="switch"
+      aria-checked={enabled}
+      aria-label={label}
+      title={label}
+      className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${enabled ? 'bg-neutral-200' : 'bg-neutral-800'}`}
+    >
+      <span
+        className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full transition-transform ${
+          enabled ? 'translate-x-4 bg-neutral-950' : 'translate-x-0 bg-neutral-500'
+        }`}
+      />
+    </button>
+  );
+}
+
 export default function Options() {
   const { bookmarks, spaces, loading, status, error, lastSyncedAt, sync, reload } = useBookmarks();
   const [message, setMessage] = useState<string | null>(null);
+  const [openInNewTab, setOpenInNewTabState] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    void getOpenInNewTab().then(setOpenInNewTabState);
+  }, []);
+
+  async function handleToggleOpenInNewTab() {
+    const next = !openInNewTab;
+    setOpenInNewTabState(next);
+    await setOpenInNewTab(next);
+  }
 
   function handleExport() {
     const data: BookmarksFile = { version: 2, spaces, bookmarks };
@@ -45,15 +76,21 @@ export default function Options() {
 
   return (
     <main className="mx-auto max-w-xl px-6 py-10">
-      <h1 className="text-xl font-semibold text-white">TabSpace — Options</h1>
-      <p className="mt-1 text-sm text-neutral-400">
-        Your bookmarks are stored in a private folder in your Google Drive (appDataFolder), invisible
-        to you outside this extension.
-      </p>
+      <div className="flex items-center gap-2">
+        <a
+          href="newtab.html"
+          aria-label="Back to New Tab"
+          title="Back to New Tab"
+          className="-ml-1.5 rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
+        >
+          <ArrowLeft className="h-5 w-5" strokeWidth={1.75} />
+        </a>
+        <h1 className="text-xl font-semibold text-ink">Settings</h1>
+      </div>
 
-      <section className="mt-6 rounded-lg border border-neutral-800 bg-neutral-900 p-4">
-        <h2 className="text-sm font-semibold text-neutral-100">Sync</h2>
-        <p className="mt-1 text-xs text-neutral-400">
+      <section className="mt-6 rounded-lg border border-line bg-surface p-4">
+        <h2 className="text-sm font-semibold text-ink">Sync</h2>
+        <p className="mt-1 text-xs text-ink-muted">
           {status === 'syncing'
             ? 'Syncing…'
             : lastSyncedAt
@@ -71,28 +108,43 @@ export default function Options() {
           </button>
           <button
             onClick={handleSignOut}
-            className="rounded-md border border-neutral-700 px-3 py-1.5 text-sm text-neutral-300 transition-colors hover:bg-neutral-800"
+            className="rounded-md border border-line px-3 py-1.5 text-sm text-ink transition-colors hover:bg-surface-hover"
           >
             Sign out of Google
           </button>
         </div>
       </section>
 
-      <section className="mt-4 rounded-lg border border-neutral-800 bg-neutral-900 p-4">
-        <h2 className="text-sm font-semibold text-neutral-100">Backup</h2>
-        <p className="mt-1 text-xs text-neutral-400">
+      <section className="mt-4 rounded-lg border border-line bg-surface p-4">
+        <h2 className="text-sm font-semibold text-ink">Behavior</h2>
+        <div className="mt-3 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm text-ink">Open bookmarks in a new tab</p>
+            <p className="mt-0.5 text-xs text-ink-muted">
+              {openInNewTab
+                ? 'Clicking a bookmark opens it in a new tab.'
+                : 'Clicking a bookmark navigates the current tab.'}
+            </p>
+          </div>
+          <Switch enabled={openInNewTab} onToggle={handleToggleOpenInNewTab} label="Open bookmarks in a new tab" />
+        </div>
+      </section>
+
+      <section className="mt-4 rounded-lg border border-line bg-surface p-4">
+        <h2 className="text-sm font-semibold text-ink">Backup</h2>
+        <p className="mt-1 text-xs text-ink-muted">
           {loading ? 'Loading…' : `${bookmarks.length} bookmarks saved.`}
         </p>
         <div className="mt-3 flex gap-2">
           <button
             onClick={handleExport}
-            className="rounded-md border border-neutral-700 px-3 py-1.5 text-sm text-neutral-300 transition-colors hover:bg-neutral-800"
+            className="rounded-md border border-line px-3 py-1.5 text-sm text-ink transition-colors hover:bg-surface-hover"
           >
             Export JSON
           </button>
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="rounded-md border border-neutral-700 px-3 py-1.5 text-sm text-neutral-300 transition-colors hover:bg-neutral-800"
+            className="rounded-md border border-line px-3 py-1.5 text-sm text-ink transition-colors hover:bg-surface-hover"
           >
             Import JSON
           </button>
@@ -110,7 +162,7 @@ export default function Options() {
         </div>
       </section>
 
-      {message && <p className="mt-4 text-sm text-neutral-200">{message}</p>}
+      {message && <p className="mt-4 text-sm text-ink">{message}</p>}
     </main>
   );
 }

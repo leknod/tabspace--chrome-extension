@@ -30,7 +30,7 @@ function ViewSpaceButton({ space, active, onSelect }: { space: Space; active: bo
     <button
       onClick={onSelect}
       className={`w-full truncate rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-        active ? 'bg-neutral-800 text-white' : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-200'
+        active ? 'bg-surface-hover text-ink' : 'text-ink-muted hover:bg-surface hover:text-ink'
       }`}
     >
       {space.name}
@@ -63,7 +63,7 @@ function EditSpaceRow({ space, onCancel, onSave }: EditSpaceRowProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex items-center gap-1 rounded-lg border border-neutral-700 bg-neutral-900 py-1 pl-2 pr-1"
+      className="flex items-center gap-1 rounded-lg border border-line bg-surface py-1 pl-2 pr-1"
     >
       <input
         autoFocus
@@ -72,12 +72,12 @@ function EditSpaceRow({ space, onCancel, onSave }: EditSpaceRowProps) {
         onKeyDown={(e) => {
           if (e.key === 'Escape') onCancel();
         }}
-        className="w-full min-w-0 bg-transparent text-sm text-neutral-100 outline-none"
+        className="w-full min-w-0 bg-transparent text-sm text-ink outline-none"
       />
       <button
         type="button"
         onClick={onCancel}
-        className="shrink-0 rounded-md p-1 text-neutral-500 transition-colors hover:bg-neutral-800 hover:text-neutral-200"
+        className="shrink-0 rounded-md p-1 text-ink-faint transition-colors hover:bg-surface-hover hover:text-ink"
         aria-label="Cancel"
       >
         <X className="h-3.5 w-3.5" strokeWidth={2} />
@@ -85,7 +85,7 @@ function EditSpaceRow({ space, onCancel, onSave }: EditSpaceRowProps) {
       <button
         type="submit"
         disabled={saving}
-        className="shrink-0 rounded-md p-1 text-neutral-500 transition-colors hover:bg-neutral-800 hover:text-emerald-400 disabled:opacity-50"
+        className="shrink-0 rounded-md p-1 text-ink-faint transition-colors hover:bg-surface-hover hover:text-emerald-400 disabled:opacity-50"
         aria-label="Save"
       >
         <Check className="h-3.5 w-3.5" strokeWidth={2} />
@@ -140,13 +140,13 @@ function SortableSpaceButton({
       className={`group flex items-center rounded-lg transition-all duration-150 ease-out ${
         isDragging ? 'opacity-40' : ''
       } ${removing ? 'pointer-events-none -translate-x-1 opacity-0' : ''} ${
-        active ? 'bg-neutral-800' : 'hover:bg-neutral-900'
+        active ? 'bg-surface-hover' : 'hover:bg-surface'
       }`}
     >
       <button
         {...attributes}
         {...listeners}
-        className="shrink-0 cursor-grab touch-none p-2 text-neutral-600 opacity-0 transition-opacity hover:text-neutral-300 focus-visible:opacity-100 group-hover:opacity-100 active:cursor-grabbing"
+        className="shrink-0 cursor-grab touch-none p-2 text-ink-subtle opacity-0 transition-opacity hover:text-ink-muted focus-visible:opacity-100 group-hover:opacity-100 active:cursor-grabbing"
         aria-label={`Reorder ${space.name}`}
       >
         <GripVertical className="h-3.5 w-3.5" strokeWidth={2} />
@@ -154,7 +154,7 @@ function SortableSpaceButton({
       <button
         onClick={onSelect}
         className={`min-w-0 flex-1 truncate py-2 text-left text-sm transition-colors ${
-          active ? 'text-white' : 'text-neutral-400 group-hover:text-neutral-200'
+          active ? 'text-ink' : 'text-ink-muted group-hover:text-ink'
         }`}
       >
         {space.name}
@@ -162,7 +162,7 @@ function SortableSpaceButton({
       <div className="flex shrink-0 items-center gap-1 pr-2 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
         <button
           onClick={onEdit}
-          className="text-neutral-600 transition-colors hover:text-neutral-200 focus-visible:outline-none"
+          className="text-ink-subtle transition-colors hover:text-ink focus-visible:outline-none"
           aria-label={`Rename ${space.name}`}
         >
           <Pencil className="h-3.5 w-3.5" strokeWidth={2} />
@@ -170,7 +170,7 @@ function SortableSpaceButton({
         {canDelete && (
           <button
             onClick={onDelete}
-            className="text-xs text-neutral-600 transition-colors hover:text-red-400 focus-visible:outline-none"
+            className="text-xs text-ink-subtle transition-colors hover:text-red-400 focus-visible:outline-none"
             aria-label={`Delete ${space.name}`}
           >
             ✕
@@ -266,13 +266,13 @@ export function SpaceNav({ spaces, activeSpaceId, editMode, onSelect, onReorder,
               }
             }}
             placeholder="Space name"
-            className="rounded-md border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-sm text-neutral-100 placeholder-neutral-500 outline-none focus:border-neutral-500"
+            className="rounded-md border border-line bg-surface px-2 py-1.5 text-sm text-ink placeholder-ink-faint outline-none focus:border-line-focus"
           />
         </form>
       ) : (
         <button
           onClick={() => setCreating(true)}
-          className="mt-1 flex items-center gap-1.5 rounded-lg px-3 py-2 text-left text-sm text-neutral-500 transition-colors hover:bg-neutral-900 hover:text-neutral-300"
+          className="mt-1 flex items-center gap-1.5 rounded-lg px-3 py-2 text-left text-sm text-ink-faint transition-colors hover:bg-surface hover:text-ink"
         >
           <Plus className="h-3.5 w-3.5" strokeWidth={2} />
           New space
