@@ -6,6 +6,43 @@ import type { Bookmark, Space } from './types';
 
 type SyncStatus = 'idle' | 'syncing' | 'error';
 
+/**
+ * Walk bookmarks in visual order (by `order`, then `createdAt`) within each space and
+ * assign `headerId` based on the nearest preceding header.  Bookmarks before the first
+ * header in a space get `headerId = undefined` (ungrouped).
+ *
+ * Returns a **new** array — the originals are not mutated.
+ */
+function computeHeaderIds(bookmarks: Bookmark[]): Bookmark[] {
+  // Group by space
+  const bySpace = new Map<string, Bookmark[]>();
+  for (const b of bookmarks) {
+    const arr = bySpace.get(b.spaceId) ?? [];
+    arr.push(b);
+    bySpace.set(b.spaceId, arr);
+  }
+
+  const idToHeaderId = new Map<string, string | undefined>();
+
+  for (const spaceBookmarks of bySpace.values()) {
+    const sorted = spaceBookmarks.slice().sort((a, b) => (a.order ?? a.createdAt) - (b.order ?? b.createdAt));
+    let currentHeaderId: string | undefined;
+    for (const bm of sorted) {
+      if (bm.isHeader) {
+        currentHeaderId = bm.id;
+        idToHeaderId.set(bm.id, undefined); // headers themselves are not grouped
+      } else {
+        idToHeaderId.set(bm.id, currentHeaderId);
+      }
+    }
+  }
+
+  return bookmarks.map((b) => {
+    const newHeaderId = idToHeaderId.get(b.id);
+    return newHeaderId !== b.headerId ? { ...b, headerId: newHeaderId } : b;
+  });
+}
+
 export function useBookmarks() {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [spaces, setSpaces] = useState<Space[]>([]);
@@ -16,7 +53,18 @@ export function useBookmarks() {
 
   const loadLocal = useCallback(async () => {
     const [localBookmarks, localSpaces] = await Promise.all([getLocalBookmarks(), getLocalSpaces()]);
-    setBookmarks(localBookmarks.filter((b) => !b.deleted));
+
+    // Migration: assign headerId to bookmarks that don't have one yet
+    const needsMigration = localBookmarks.some(
+      (b) => !b.deleted && !b.isHeader && b.headerId === undefined,
+    ) && localBookmarks.some((b) => !b.deleted && b.isHeader);
+
+    const finalBookmarks = needsMigration ? computeHeaderIds(localBookmarks) : localBookmarks;
+    if (needsMigration) {
+      await setLocalBookmarks(finalBookmarks);
+    }
+
+    setBookmarks(finalBookmarks.filter((b) => !b.deleted));
     setSpaces(
       localSpaces.filter((s) => !s.deleted).length
         ? localSpaces.filter((s) => !s.deleted)
@@ -47,17 +95,25 @@ export function useBookmarks() {
   const addBookmark = useCallback(
     async (input: { url: string; title: string; spaceId: string }) => {
       const now = Date.now();
+      const current = await getLocalBookmarks();
+
+      // Find the last header in this space to assign as the bookmark's group
+      const spaceBookmarks = current
+        .filter((b) => !b.deleted && b.spaceId === input.spaceId)
+        .sort((a, b) => (a.order ?? a.createdAt) - (b.order ?? b.createdAt));
+      const lastHeader = [...spaceBookmarks].reverse().find((b) => b.isHeader);
+
       const bookmark: Bookmark = {
         id: newId(),
         url: input.url,
         title: input.title || input.url,
         spaceId: input.spaceId,
+        headerId: lastHeader?.id,
         order: now,
         createdAt: now,
         updatedAt: now,
       };
 
-      const current = await getLocalBookmarks();
       const next = [...current, bookmark];
       await setLocalBookmarks(next);
       setBookmarks(next.filter((b) => !b.deleted));
@@ -108,10 +164,12 @@ export function useBookmarks() {
       const now = Date.now();
       const indexById = new Map(orderedIds.map((id, index) => [id, index]));
       const current = await getLocalBookmarks();
-      const next = current.map((b) => {
+      const reordered = current.map((b) => {
         const order = indexById.get(b.id);
         return order === undefined ? b : { ...b, order, updatedAt: now };
       });
+      // Recalculate headerId based on new visual order
+      const next = computeHeaderIds(reordered);
       await setLocalBookmarks(next);
       setBookmarks(next.filter((b) => !b.deleted));
       await sync();
@@ -121,8 +179,17 @@ export function useBookmarks() {
 
   const deleteBookmark = useCallback(
     async (id: string) => {
+      const now = Date.now();
       const current = await getLocalBookmarks();
-      const next = current.map((b) => (b.id === id ? { ...b, deleted: true, updatedAt: Date.now() } : b));
+      const target = current.find((b) => b.id === id);
+      let next = current.map((b) => (b.id === id ? { ...b, deleted: true, updatedAt: now } : b));
+
+      // When deleting a header, recalculate headerId for all bookmarks so orphans
+      // get reassigned to the previous header (or become ungrouped).
+      if (target?.isHeader) {
+        next = computeHeaderIds(next);
+      }
+
       await setLocalBookmarks(next);
       setBookmarks(next.filter((b) => !b.deleted));
       await sync();

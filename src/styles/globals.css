@@ -2,11 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Light mode (default) - Soft, glare-free matte canvas */
+  --canvas: 236 238 241;       /* #eceef1 soft matte background */
+  --surface: 255 255 255;      /* #ffffff cards and panels */
+  --surface-hover: 226 229 234;/* #e2e5ea */
+  --line: 218 222 228;         /* #dadfe4 */
+  --line-focus: 148 163 184;   /* #94a3b8 */
+  --ink: 15 23 42;             /* #0f172a */
+  --ink-muted: 71 85 105;      /* #475569 */
+  --ink-faint: 148 163 184;    /* #94a3b8 */
+  --ink-subtle: 203 213 225;   /* #cbd5e1 */
+  color-scheme: light;
+}
+
+/* System dark mode preference when not explicitly set to .light */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --canvas: 18 18 18;        /* #121212 */
+    --surface: 41 42 45;       /* #292a2d */
+    --surface-hover: 38 38 38; /* neutral-800 */
+    --line: 64 64 64;          /* neutral-700 */
+    --line-focus: 115 115 115; /* neutral-500 */
+    --ink: 245 245 245;        /* neutral-100 */
+    --ink-muted: 163 163 163;  /* neutral-400 */
+    --ink-faint: 115 115 115;  /* neutral-500 */
+    --ink-subtle: 82 82 91;    /* neutral-600 */
+    color-scheme: dark;
+  }
+}
+
+/* Explicit dark theme */
+:root.dark {
+  --canvas: 18 18 18;
+  --surface: 41 42 45;
+  --surface-hover: 38 38 38;
+  --line: 64 64 64;
+  --line-focus: 115 115 115;
+  --ink: 245 245 245;
+  --ink-muted: 163 163 163;
+  --ink-faint: 115 115 115;
+  --ink-subtle: 82 82 91;
+  color-scheme: dark;
+}
+
+/* Explicit light theme */
+:root.light {
+  --canvas: 236 238 241;
+  --surface: 255 255 255;
+  --surface-hover: 226 229 234;
+  --line: 218 222 228;
+  --line-focus: 148 163 184;
+  --ink: 15 23 42;
+  --ink-muted: 71 85 105;
+  --ink-faint: 148 163 184;
+  --ink-subtle: 203 213 225;
+  color-scheme: light;
+}
+
 html,
 body {
   margin: 0;
   padding: 0;
-  color-scheme: dark;
   scrollbar-width: thin;
 }
 

@@ -30,7 +30,7 @@ function ViewSpaceButton({ space, active, onSelect }: { space: Space; active: bo
     <button
       onClick={onSelect}
       className={`w-full truncate rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-        active ? 'bg-surface-hover text-ink' : 'text-ink-muted hover:bg-surface hover:text-ink'
+        active ? 'bg-surface-hover text-ink font-medium' : 'text-ink-muted hover:bg-surface-hover hover:text-ink'
       }`}
     >
       {space.name}
@@ -140,7 +140,7 @@ function SortableSpaceButton({
       className={`group flex items-center rounded-lg transition-all duration-150 ease-out ${
         isDragging ? 'opacity-40' : ''
       } ${removing ? 'pointer-events-none -translate-x-1 opacity-0' : ''} ${
-        active ? 'bg-surface-hover' : 'hover:bg-surface'
+        active ? 'bg-surface-hover' : 'hover:bg-surface-hover'
       }`}
     >
       <button
@@ -272,7 +272,7 @@ export function SpaceNav({ spaces, activeSpaceId, editMode, onSelect, onReorder,
       ) : (
         <button
           onClick={() => setCreating(true)}
-          className="mt-1 flex items-center gap-1.5 rounded-lg px-3 py-2 text-left text-sm text-ink-faint transition-colors hover:bg-surface hover:text-ink"
+          className="mt-1 flex items-center gap-1.5 rounded-lg px-3 py-2 text-left text-sm text-ink-faint transition-colors hover:bg-surface-hover hover:text-ink"
         >
           <Plus className="h-3.5 w-3.5" strokeWidth={2} />
           New space

@@ -6,6 +6,7 @@ const SPACES_KEY = 'spaces';
 const SYNC_STATE_KEY = 'syncState';
 const LAST_USED_SPACE_KEY = 'lastUsedSpaceId';
 const OPEN_IN_NEW_TAB_KEY = 'openInNewTab';
+const HEADER_STYLE_KEY = 'headerStyle';
 
 /**
  * chrome.storage.local only exists inside the extension. Outside it (e.g. `npm run dev`
@@ -73,6 +74,49 @@ export async function setOpenInNewTab(value: boolean): Promise<void> {
   await setKey(OPEN_IN_NEW_TAB_KEY, value);
 }
 
+export type HeaderStyle = 'simple' | 'pill-center' | 'pill-full';
+
+/** Visual style used to render section headers inside a space. */
+export async function getHeaderStyle(): Promise<HeaderStyle> {
+  return (await getKey<HeaderStyle>(HEADER_STYLE_KEY)) ?? 'simple';
+}
+
+export async function setHeaderStyle(value: HeaderStyle): Promise<void> {
+  await setKey(HEADER_STYLE_KEY, value);
+}
+
+export type ThemeSetting = 'system' | 'light' | 'dark';
+const THEME_KEY = 'theme';
+
+/** User theme choice: 'system', 'light', or 'dark'. */
+export async function getTheme(): Promise<ThemeSetting> {
+  return (await getKey<ThemeSetting>(THEME_KEY)) ?? 'system';
+}
+
+export async function setTheme(value: ThemeSetting): Promise<void> {
+  await setKey(THEME_KEY, value);
+}
+
+/** Applies the chosen theme to the document root element. */
+export function applyTheme(theme: ThemeSetting): void {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  if (theme === 'dark') {
+    root.classList.add('dark');
+    root.classList.remove('light');
+    root.style.colorScheme = 'dark';
+  } else if (theme === 'light') {
+    root.classList.add('light');
+    root.classList.remove('dark');
+    root.style.colorScheme = 'light';
+  } else {
+    // system
+    root.classList.remove('light', 'dark');
+    root.style.colorScheme = '';
+  }
+}
+
 export function newId(): string {
   return crypto.randomUUID();
 }
+

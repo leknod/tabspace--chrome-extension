@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Plus, Settings } from 'lucide-react';
 import { BookmarkBoard } from '@/components/BookmarkBoard';
 import { SpaceNav } from '@/components/SpaceNav';
-import { getOpenInNewTab } from '@/lib/storage';
+import { getOpenInNewTab, getHeaderStyle } from '@/lib/storage';
+import type { HeaderStyle } from '@/lib/storage';
 import { useBookmarks } from '@/lib/useBookmarks';
 
 function EditModeSwitch({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) {
@@ -16,11 +17,13 @@ function EditModeSwitch({ enabled, onToggle }: { enabled: boolean; onToggle: () 
       className="flex items-center gap-1.5 rounded-full px-1 py-0.5 transition-colors"
     >
       <span
-        className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${enabled ? 'bg-neutral-200' : 'bg-neutral-800'}`}
+        className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
+          enabled ? 'bg-ink' : 'border border-line bg-surface-hover'
+        }`}
       >
         <span
           className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full transition-transform ${
-            enabled ? 'translate-x-4 bg-neutral-950' : 'translate-x-0 bg-neutral-500'
+            enabled ? 'translate-x-4 bg-canvas' : 'translate-x-0 bg-ink-faint'
           }`}
         />
       </span>
@@ -47,9 +50,11 @@ export default function NewTab() {
   const [addingHeader, setAddingHeader] = useState(false);
   const [newHeaderName, setNewHeaderName] = useState('');
   const [openInNewTab, setOpenInNewTabState] = useState(false);
+  const [headerStyle, setHeaderStyleState] = useState<HeaderStyle>('simple');
 
   useEffect(() => {
     void getOpenInNewTab().then(setOpenInNewTabState);
+    void getHeaderStyle().then(setHeaderStyleState);
   }, []);
 
   const sortedSpaces = useMemo(
@@ -91,7 +96,7 @@ export default function NewTab() {
           <EditModeSwitch enabled={editMode} onToggle={() => setEditMode((v) => !v)} />
           <button
             onClick={() => chrome.runtime.openOptionsPage()}
-            className="flex items-center justify-center rounded-lg p-2 text-ink-muted transition-colors hover:bg-surface hover:text-ink"
+            className="flex items-center justify-center rounded-lg p-2 text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
             aria-label="Settings"
             title="Settings"
           >
@@ -125,7 +130,7 @@ export default function NewTab() {
             ) : (
               <button
                 onClick={() => setAddingHeader(true)}
-                className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-left text-sm text-ink-faint transition-colors hover:bg-surface hover:text-ink"
+                className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-left text-sm text-ink-faint transition-colors hover:bg-surface-hover hover:text-ink"
               >
                 <Plus className="h-3.5 w-3.5" strokeWidth={2} />
                 Add header
@@ -140,6 +145,7 @@ export default function NewTab() {
             spaces={spaces}
             editMode={editMode}
             openInNewTab={openInNewTab}
+            headerStyle={headerStyle}
             onDelete={deleteBookmark}
             onUpdate={updateBookmark}
             onReorder={reorderBookmarks}

@@ -1,7 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { signOut } from '@/lib/auth';
-import { getOpenInNewTab, setLocalBookmarks, setLocalSpaces, setOpenInNewTab } from '@/lib/storage';
+import {
+  applyTheme,
+  getHeaderStyle,
+  getOpenInNewTab,
+  getTheme,
+  setHeaderStyle,
+  setLocalBookmarks,
+  setLocalSpaces,
+  setOpenInNewTab,
+  setTheme,
+} from '@/lib/storage';
+import type { HeaderStyle, ThemeSetting } from '@/lib/storage';
 import { DEFAULT_SPACE_ID } from '@/lib/types';
 import type { Bookmark, BookmarksFile, Space } from '@/lib/types';
 import { useBookmarks } from '@/lib/useBookmarks';
@@ -14,11 +25,13 @@ function Switch({ enabled, onToggle, label }: { enabled: boolean; onToggle: () =
       aria-checked={enabled}
       aria-label={label}
       title={label}
-      className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${enabled ? 'bg-neutral-200' : 'bg-neutral-800'}`}
+      className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
+        enabled ? 'bg-ink' : 'border border-line bg-surface-hover'
+      }`}
     >
       <span
         className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full transition-transform ${
-          enabled ? 'translate-x-4 bg-neutral-950' : 'translate-x-0 bg-neutral-500'
+          enabled ? 'translate-x-4 bg-canvas' : 'translate-x-0 bg-ink-faint'
         }`}
       />
     </button>
@@ -29,11 +42,26 @@ export default function Options() {
   const { bookmarks, spaces, loading, status, error, lastSyncedAt, sync, reload } = useBookmarks();
   const [message, setMessage] = useState<string | null>(null);
   const [openInNewTab, setOpenInNewTabState] = useState(false);
+  const [headerStyle, setHeaderStyleState] = useState<HeaderStyle>('simple');
+  const [theme, setThemeState] = useState<ThemeSetting>('system');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     void getOpenInNewTab().then(setOpenInNewTabState);
+    void getHeaderStyle().then(setHeaderStyleState);
+    void getTheme().then(setThemeState);
   }, []);
+
+  async function handleThemeChange(value: ThemeSetting) {
+    setThemeState(value);
+    await setTheme(value);
+    applyTheme(value);
+  }
+
+  async function handleHeaderStyleChange(value: HeaderStyle) {
+    setHeaderStyleState(value);
+    await setHeaderStyle(value);
+  }
 
   async function handleToggleOpenInNewTab() {
     const next = !openInNewTab;
@@ -89,29 +117,42 @@ export default function Options() {
       </div>
 
       <section className="mt-6 rounded-lg border border-line bg-surface p-4">
-        <h2 className="text-sm font-semibold text-ink">Sync</h2>
-        <p className="mt-1 text-xs text-ink-muted">
-          {status === 'syncing'
-            ? 'Syncing…'
-            : lastSyncedAt
-              ? `Last synced: ${new Date(lastSyncedAt).toLocaleString()}`
-              : 'Not synced yet in this session.'}
-        </p>
-        {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
-        <div className="mt-3 flex gap-2">
-          <button
-            onClick={() => sync()}
-            disabled={status === 'syncing'}
-            className="rounded-md bg-white px-3 py-1.5 text-sm font-medium text-neutral-950 transition-colors hover:bg-neutral-200 disabled:opacity-50"
+        <h2 className="text-sm font-semibold text-ink">Style</h2>
+        
+        <div className="mt-3 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm text-ink">Theme</p>
+            <p className="mt-0.5 text-xs text-ink-muted">
+              Choose light, dark, or sync with your system theme.
+            </p>
+          </div>
+          <select
+            value={theme}
+            onChange={(e) => void handleThemeChange(e.target.value as ThemeSetting)}
+            className="rounded-md border border-line bg-canvas px-2 py-1.5 text-sm text-ink outline-none transition-colors focus:border-line-focus"
           >
-            {status === 'syncing' ? 'Syncing…' : 'Sync now'}
-          </button>
-          <button
-            onClick={handleSignOut}
-            className="rounded-md border border-line px-3 py-1.5 text-sm text-ink transition-colors hover:bg-surface-hover"
+            <option value="system">Auto (System)</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between gap-4 border-t border-line/60 pt-4">
+          <div>
+            <p className="text-sm text-ink">Header style</p>
+            <p className="mt-0.5 text-xs text-ink-muted">
+              Visual appearance of section headers inside a space.
+            </p>
+          </div>
+          <select
+            value={headerStyle}
+            onChange={(e) => void handleHeaderStyleChange(e.target.value as HeaderStyle)}
+            className="rounded-md border border-line bg-canvas px-2 py-1.5 text-sm text-ink outline-none transition-colors focus:border-line-focus"
           >
-            Sign out of Google
-          </button>
+            <option value="simple">Style 1 — Simple</option>
+            <option value="pill-center">Style 2 — Pill centered</option>
+            <option value="pill-full">Style 3 — Pill full width</option>
+          </select>
         </div>
       </section>
 
@@ -127,6 +168,33 @@ export default function Options() {
             </p>
           </div>
           <Switch enabled={openInNewTab} onToggle={handleToggleOpenInNewTab} label="Open bookmarks in a new tab" />
+        </div>
+      </section>
+
+      <section className="mt-4 rounded-lg border border-line bg-surface p-4">
+        <h2 className="text-sm font-semibold text-ink">Sync</h2>
+        <p className="mt-1 text-xs text-ink-muted">
+          {status === 'syncing'
+            ? 'Syncing…'
+            : lastSyncedAt
+              ? `Last synced: ${new Date(lastSyncedAt).toLocaleString()}`
+              : 'Not synced yet in this session.'}
+        </p>
+        {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
+        <div className="mt-3 flex gap-2">
+          <button
+            onClick={() => sync()}
+            disabled={status === 'syncing'}
+            className="rounded-md bg-ink px-3 py-1.5 text-sm font-medium text-canvas transition-opacity hover:opacity-90 disabled:opacity-50"
+          >
+            {status === 'syncing' ? 'Syncing…' : 'Sync now'}
+          </button>
+          <button
+            onClick={handleSignOut}
+            className="rounded-md border border-line px-3 py-1.5 text-sm text-ink transition-colors hover:bg-surface-hover"
+          >
+            Sign out of Google
+          </button>
         </div>
       </section>
 

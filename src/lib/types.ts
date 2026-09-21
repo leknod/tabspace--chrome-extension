@@ -26,6 +26,8 @@ export interface Bookmark {
   order?: number;
   /** true for a section header: a link-less row used to group bookmarks under it within a space. */
   isHeader?: boolean;
+  /** ID of the header (a bookmark with `isHeader: true`) this bookmark is grouped under. Undefined means ungrouped. */
+  headerId?: string;
   /** true when the user deleted it; kept around to reconcile deletion across devices. */
   deleted?: boolean;
 }
