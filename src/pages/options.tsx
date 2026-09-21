@@ -172,6 +172,25 @@ export default function Options() {
       </section>
 
       <section className="mt-4 rounded-lg border border-line bg-surface p-4">
+        <h2 className="text-sm font-semibold text-ink">Side Panel</h2>
+        <p className="mt-1 text-xs text-ink-muted">
+          Access your bookmarks in a collapsible tree view directly in Chrome&apos;s side panel. You can also open it by right-clicking any webpage.
+        </p>
+        <div className="mt-3 flex gap-2">
+          <button
+            onClick={() => {
+              if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
+                chrome.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' });
+              }
+            }}
+            className="rounded-md border border-line px-3 py-1.5 text-sm text-ink transition-colors hover:bg-surface-hover"
+          >
+            Open Side Panel
+          </button>
+        </div>
+      </section>
+
+      <section className="mt-4 rounded-lg border border-line bg-surface p-4">
         <h2 className="text-sm font-semibold text-ink">Sync</h2>
         <p className="mt-1 text-xs text-ink-muted">
           {status === 'syncing'

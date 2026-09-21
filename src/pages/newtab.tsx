@@ -55,6 +55,23 @@ export default function NewTab() {
   useEffect(() => {
     void getOpenInNewTab().then(setOpenInNewTabState);
     void getHeaderStyle().then(setHeaderStyleState);
+
+    if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
+      const listener = (changes: { [key: string]: chrome.storage.StorageChange }, area: string) => {
+        if (area === 'local') {
+          if (changes.headerStyle) {
+            setHeaderStyleState((changes.headerStyle.newValue as HeaderStyle) ?? 'simple');
+          }
+          if (changes.openInNewTab) {
+            setOpenInNewTabState(Boolean(changes.openInNewTab.newValue));
+          }
+        }
+      };
+      chrome.storage.onChanged.addListener(listener);
+      return () => {
+        chrome.storage.onChanged.removeListener(listener);
+      };
+    }
   }, []);
 
   const sortedSpaces = useMemo(
@@ -69,10 +86,14 @@ export default function NewTab() {
 
   const filtered = bookmarks.filter((b) => b.spaceId === activeSpaceId);
 
-  async function handleAddHeader(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleAddHeader(e?: React.FormEvent) {
+    if (e) e.preventDefault();
     const name = newHeaderName.trim();
-    if (!name || !activeSpaceId) return;
+    if (!name || !activeSpaceId) {
+      setAddingHeader(false);
+      setNewHeaderName('');
+      return;
+    }
     await addHeader(activeSpaceId, name);
     setNewHeaderName('');
     setAddingHeader(false);
@@ -114,9 +135,7 @@ export default function NewTab() {
                   autoFocus
                   value={newHeaderName}
                   onChange={(e) => setNewHeaderName(e.target.value)}
-                  onBlur={() => {
-                    if (!newHeaderName.trim()) setAddingHeader(false);
-                  }}
+                  onBlur={() => void handleAddHeader()}
                   onKeyDown={(e) => {
                     if (e.key === 'Escape') {
                       setNewHeaderName('');

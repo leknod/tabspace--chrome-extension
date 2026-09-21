@@ -190,7 +190,7 @@ function SortableRow({
     id: bookmark.id,
     disabled: editing,
   });
-  const style = { transform: CSS.Transform.toString(transform), transition };
+  const style = { transform: CSS.Translate.toString(transform), transition };
 
   if (editing) {
     return (
@@ -206,8 +206,8 @@ function SortableRow({
       <li
         ref={setNodeRef}
         style={style}
-        className={`group break-inside-avoid break-after-avoid transition-all duration-150 ease-out first:mt-0 ${isSimple ? 'mb-1 mt-10 border-b border-line pb-1.5' : 'mb-3 mt-12'
-          } ${removing ? 'pointer-events-none -translate-x-1 opacity-0' : isDragging ? 'opacity-25' : 'opacity-100'}`}
+        className={`group break-inside-avoid break-after-avoid transition-colors first:mt-0 ${isSimple ? 'mb-1 mt-10 border-b border-line pb-1.5' : 'mb-3 mt-12'
+          } ${removing ? 'pointer-events-none -translate-x-1 opacity-0 transition-all duration-150 ease-out' : isDragging ? 'opacity-25' : 'opacity-100'}`}
       >
         <div className="flex items-center gap-1">
           <button
@@ -246,7 +246,7 @@ function SortableRow({
     <li
       ref={setNodeRef}
       style={style}
-      className={`group mb-3 flex items-center gap-1 break-inside-avoid transition-all duration-150 ease-out ${removing ? 'pointer-events-none -translate-x-1 opacity-0' : isDragging ? 'opacity-25' : groupDragging ? 'opacity-25' : 'opacity-100'
+      className={`group mb-3 flex items-center gap-1 break-inside-avoid transition-colors ${removing ? 'pointer-events-none -translate-x-1 opacity-0 transition-all duration-150 ease-out' : isDragging ? 'opacity-25' : groupDragging ? 'opacity-25' : 'opacity-100'
         }`}
     >
       <button

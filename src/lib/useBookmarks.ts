@@ -163,6 +163,13 @@ export function useBookmarks() {
     async (orderedIds: string[]) => {
       const now = Date.now();
       const indexById = new Map(orderedIds.map((id, index) => [id, index]));
+      setBookmarks((prev) => {
+        const reordered = prev.map((b) => {
+          const order = indexById.get(b.id);
+          return order === undefined ? b : { ...b, order, updatedAt: now };
+        });
+        return computeHeaderIds(reordered).filter((b) => !b.deleted);
+      });
       const current = await getLocalBookmarks();
       const reordered = current.map((b) => {
         const order = indexById.get(b.id);
@@ -206,7 +213,7 @@ export function useBookmarks() {
       const next = [...current, space];
       await setLocalSpaces(next);
       setSpaces(next.filter((s) => !s.deleted));
-      await sync();
+      void sync();
       return space;
     },
     [sync],
@@ -217,6 +224,12 @@ export function useBookmarks() {
     async (orderedIds: string[]) => {
       const now = Date.now();
       const indexById = new Map(orderedIds.map((id, index) => [id, index]));
+      setSpaces((prev) =>
+        prev.map((s) => {
+          const order = indexById.get(s.id);
+          return order === undefined ? s : { ...s, order, updatedAt: now };
+        }),
+      );
       const current = await getLocalSpaces();
       const next = current.map((s) => {
         const order = indexById.get(s.id);
